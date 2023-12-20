@@ -43,41 +43,42 @@ public class DAOLibroImplementacion implements DAOLibro {
     }
     
     @Override
-public void modificar(Libro libro) {
-    try (Connection conectar = main.establecerConeccion()) {
-        // Get the ID of the book based on its details
-        String getIdQuery = "SELECT id FROM libros WHERE titulo = ? AND autor = ? AND genero = ? AND estaDisponible = ?";
-        try (PreparedStatement getId = conectar.prepareStatement(getIdQuery)) {
-            getId.setString(1, libro.getTitulo());
-            getId.setString(2, libro.getAutor());
-            getId.setString(3, libro.getGenero());
-            getId.setBoolean(4, libro.estaDisponible());
+    public void modificar(Libro libroNuevo, Libro libroViejo) {
+        try (Connection conectar = main.establecerConeccion()) {
+            // Get the ID of the book based on its details
+            String getIdQuery = "SELECT id FROM libros WHERE titulo = ? AND autor = ? AND genero = ? AND estaDisponible = ?";
+            try (PreparedStatement getId = conectar.prepareStatement(getIdQuery)) {
+                getId.setString(1, libroViejo.getTitulo());
+                getId.setString(2, libroViejo.getAutor());
+                getId.setString(3, libroViejo.getGenero());
+                getId.setBoolean(4, libroViejo.estaDisponible());
+                System.out.println("Libro con datos " + libroViejo.getTitulo() + ", "+ libroViejo.getAutor() + ", "+ libroViejo.getGenero() + ", "+ libroViejo.estaDisponible());
 
-            try (ResultSet consulta = getId.executeQuery()) {
-                if (consulta.next()) {
-                    // Update the book details using the obtained ID
-                    int bookId = consulta.getInt("id");
+                try (ResultSet consulta = getId.executeQuery()) {
+                    if (consulta.next()) {
+                        // Update the book details using the obtained ID
+                        int bookId = consulta.getInt("id");
 
-                    String updateQuery = "UPDATE libros SET titulo = ?, autor = ?, genero = ?, estaDisponible = ? WHERE id = ?";
-                    try (PreparedStatement modificar = conectar.prepareStatement(updateQuery)) {
-                        modificar.setString(1, libro.getTitulo());
-                        modificar.setString(2, libro.getAutor());
-                        modificar.setString(3, libro.getGenero());
-                        modificar.setBoolean(4, libro.estaDisponible());
-                        modificar.setInt(5, bookId);
-
-                        modificar.executeUpdate();
-                        System.out.println("Libro con ID " + bookId + " actualizado satisfactoriamente.");
+                        String updateQuery = "UPDATE libros SET titulo = ?, autor = ?, genero = ?, estaDisponible = ? WHERE id = ?";
+                        try (PreparedStatement actualizar = conectar.prepareStatement(updateQuery)) {
+                            actualizar.setString(1, libroNuevo.getTitulo());
+                            actualizar.setString(2, libroNuevo.getAutor());
+                            actualizar.setString(3, libroNuevo.getGenero());
+                            actualizar.setBoolean(4, libroNuevo.estaDisponible());
+                            actualizar.setInt(5, bookId);
+                            int rowsAffected = actualizar.executeUpdate();
+                            System.out.println("Rows affected: " + rowsAffected);
+                            System.out.println("Libro con ID " + bookId + " actualizado satisfactoriamente.");
+                        }
+                    } else {
+                        System.out.println("Libro no encontrado en la base de datos.");
                     }
-                } else {
-                    System.out.println("Libro no encontrado en la base de datos.");
                 }
             }
+        } catch (Exception e) {
+            System.out.println("Error al modificar el libro: " + e);
         }
-    } catch (Exception e) {
-        System.out.println("Error al modificar el libro: " + e);
     }
-}
 
 
     @Override
@@ -96,9 +97,11 @@ public void modificar(Libro libro) {
                 // Update the book details using the obtained ID
                 int bookId = consulta.getInt("id");
 
-                PreparedStatement eliminar = conectar.prepareStatement("DELETE FROM empleados WHERE id = ?");
+                PreparedStatement eliminar = conectar.prepareStatement("DELETE FROM libros WHERE id = ?");
                 eliminar.setInt(1, bookId);
-                eliminar.executeUpdate();
+                int rowsAffected = eliminar.executeUpdate();
+                System.out.println("Rows affected: " + rowsAffected);
+                System.out.println("Libro con ID " + bookId + " eliminado satisfactoriamente.");
             }
         }
         catch(Exception e){

@@ -1,8 +1,8 @@
 libros\Disenio$1.class
 interfaces\DAOLibroImplementacion.class
-personas\Empleado.class
 Dao\Main.class
 libros\Disenio$2.class
+libros\Disenio$6.class
 libros\Disenio$4.class
 libros\Libro.class
 interfaces\DAOLibro.class

@@ -5,12 +5,7 @@
 package libros;
 
 import interfaces.DAOLibroImplementacion;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.Statement;
 import javax.swing.JOptionPane;
-import javax.swing.table.DefaultTableModel;
-import libros.Libro;
 
 /**
  *
@@ -35,7 +30,7 @@ public class Disenio extends javax.swing.JFrame {
 
         if( cajaTitulo.getText().equals("") || cajaAutor.getText().equals("") || cajaGenero.getText().equals("")
             || !radioDisponible.isSelected()){
-            JOptionPane.showMessageDialog(null, "Por favor ingrese los datos del libro a insertar");
+            JOptionPane.showMessageDialog(null, "Por favor ingrese los datos del libro a insertar o registre el libro como disponible");
         } else {
             String titulo = cajaTitulo.getText();
             String autor = cajaAutor.getText();
@@ -58,40 +53,58 @@ public class Disenio extends javax.swing.JFrame {
     }
     
 //Actualizar registros
-    public int obtenerIdSeleccionado() {
+    public int obtenerFilaSeleccionada() {
         //Obtener la fila seleccionada en la tabla
         int filaSeleccionada = tablaDatos.getSelectedRow();
 
         if (filaSeleccionada == -1) {
-            JOptionPane.showMessageDialog(null, "Debe seleccionar una fila de la tabla");
             return -1; //Retornar un valor negativo para indicar que no se selecciono nada
         }
-        int id = (int) tablaDatos.getValueAt(filaSeleccionada, 0);
-
-        return id;
+        return filaSeleccionada;
     }
     public void modificar(){
         
         DAOLibroImplementacion libro_dao = new DAOLibroImplementacion();
                 
         if( cajaTitulo.getText().equals("") || cajaAutor.getText().equals("") || cajaGenero.getText().equals("")){
-            JOptionPane.showMessageDialog(null, "Por favor ingrese los datos del libro a insertar");
+            JOptionPane.showMessageDialog(null, "Por favor seleccione un libro a modificar de la tabla");
         } else {
-            int idSeleccionado = obtenerIdSeleccionado();
+            int filaSeleccionada = obtenerFilaSeleccionada();
 
-            if (idSeleccionado != -1) {
-                int filaSeleccionada = tablaDatos.getSelectedRow();
+            if (filaSeleccionada != -1) {
                 String titulo = (String) tablaDatos.getValueAt(filaSeleccionada, 1); 
                 String autor = (String) tablaDatos.getValueAt(filaSeleccionada, 2); 
                 String genero = (String) tablaDatos.getValueAt(filaSeleccionada, 3); 
                 boolean estaDisponible = (boolean) tablaDatos.getValueAt(filaSeleccionada, 4); 
-                Libro libro = new Libro(titulo,autor,genero);       
-                libro.setDisponible(estaDisponible);
-                libro_dao.modificar(libro);            
+                Libro libroViejo = new Libro(titulo,autor,genero);   
+                libroViejo.setDisponible(estaDisponible);
+                Libro libroNuevo = new Libro(cajaTitulo.getText(), cajaAutor.getText(), cajaGenero.getText());
+                libroNuevo.setDisponible(radioDisponible.isSelected());
+                libro_dao.modificar(libroNuevo, libroViejo);            
                 JOptionPane.showMessageDialog(null, "Registro modificado correctamente");
             }
         }
     }
+    
+    public void eliminar(){
+        
+        DAOLibroImplementacion libro_dao = new DAOLibroImplementacion();
+                
+        int filaSeleccionada = obtenerFilaSeleccionada();
+
+        if (filaSeleccionada == -1) {
+            JOptionPane.showMessageDialog(null, "Debe seleccionar una fila para eliminar datos");
+        } else {
+            String titulo = (String) tablaDatos.getValueAt(filaSeleccionada, 1); 
+            String autor = (String) tablaDatos.getValueAt(filaSeleccionada, 2); 
+            String genero = (String) tablaDatos.getValueAt(filaSeleccionada, 3); 
+            boolean estaDisponible = (boolean) tablaDatos.getValueAt(filaSeleccionada, 4); 
+            Libro libro = new Libro(titulo,autor,genero);   
+            libro.setDisponible(estaDisponible);
+            libro_dao.eliminar(libro);            
+            JOptionPane.showMessageDialog(null, "Registro eliminado correctamente");
+            }
+        }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -179,6 +192,11 @@ public class Disenio extends javax.swing.JFrame {
         });
 
         btnEliminar.setText("Eliminar");
+        btnEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEliminarActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -216,7 +234,7 @@ public class Disenio extends javax.swing.JFrame {
                                             .addGap(71, 71, 71)
                                             .addComponent(btnEliminar))
                                         .addComponent(radioDisponible, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))))))
-                .addContainerGap(452, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -237,7 +255,7 @@ public class Disenio extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(radioDisponible)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnRegistrar)
                     .addComponent(btnActualizar)
@@ -254,16 +272,23 @@ public class Disenio extends javax.swing.JFrame {
     private void btnActualizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarActionPerformed
         modificar();
         limpiar();
+        buscar();
     }//GEN-LAST:event_btnActualizarActionPerformed
 
     private void btnRegistrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegistrarActionPerformed
         registrar();
         limpiar();
+        buscar();
     }//GEN-LAST:event_btnRegistrarActionPerformed
 
     private void btnBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuscarActionPerformed
         buscar();
     }//GEN-LAST:event_btnBuscarActionPerformed
+
+    private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
+        eliminar();
+        buscar();
+    }//GEN-LAST:event_btnEliminarActionPerformed
 
     /**
      * @param args the command line arguments

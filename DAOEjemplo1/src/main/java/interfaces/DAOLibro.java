@@ -15,7 +15,7 @@ public interface DAOLibro {
     
     public void registrar(Libro libro);
     
-    public void modificar(Libro libro);
+    public void modificar(Libro libroNuevo, Libro libroViejo);
     
     public DefaultTableModel buscar(Libro libro);
     
